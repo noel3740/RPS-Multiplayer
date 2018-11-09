@@ -22,6 +22,13 @@
 
 <body>
 
+    <!--Searching for opponents lock screen-->
+    <div id="lockOpponentCard" class="p-3 lockScreen">
+        <div class="d-flex align-items-center justify-content-center h-100">
+            <p><i class="fa fa-spinner fa-spin"></i> Searching for opponent</p>
+        </div>
+    </div>
+
     <!--Header Section-->
     <header>
         <!-- Jumbotron Title -->
@@ -42,8 +49,6 @@
     </header>
 
     <div class="container">
-
-
 
         <section class="row">
             <div class="col-md-12 col-lg-6 mb-4">
@@ -72,12 +77,6 @@
             </div>
             <div class="col-md-12 col-lg-6 mb-4">
 
-                <div id="lockOpponentCard" class="p-3 lockScreen">
-                    <div class="d-flex align-items-center justify-content-center h-100">
-                        <p><i class="fa fa-spinner fa-spin"></i> Searching for opponent</p>
-                    </div>
-                </div>
-
                 <div class="card card-default text-center resultsCard">
                     <div class="card-header bg-dark text-light">
                         <h3 id="opponentName">Opponent</span></h3>
@@ -87,12 +86,56 @@
                     <div class="card-body">
                         <p><i id="opponentHand"></i></p>
                         <h4 id="opponentHandDesc"></h4>
+                        <div id="divSearchForOppenent">
+                            <h2>Player disconnected!</h2>
+                            <button id="btnSearchForOpponent" class="btn btn-primary mt-3">Search for New Opponent</button>
+                        </div>
                     </div>
                 </div>
             </div>
         </section>
 
     </div>
+
+    <!-- Results Modal -->
+    <div class="modal fade text-center" id="resultsModal" tabindex="-1" role="dialog" aria-labelledby="resultsModalTitle"
+        aria-hidden="true" data-backdrop="static" data-keyboard="false">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title w-100" id="resultsModalTitle"></h1>
+                </div>
+                <div class="modal-body">
+                    ...
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!--Chat section-->
+    <section>
+        <button id="btnChat" class="btn btn-secondary openButton">Chat</button>
+        <div class="chatPopup" id="divChat">
+
+            <div class="card card-default">
+                <div class="card-header">
+                    <h1>Chat</h1>
+                </div>
+                <div class="card-body">
+                    <div class="border rounded mb-3" id="chatMessages"> </div>
+                    <form id="formChat">
+                        <div class="form-group">
+                            <input class="form-control" type="text" id="textboxMessage" placeholder="Send a message" autofocus
+                                required>
+                        </div>
+                        <button id="btnCloseChat" type="button" class="btn btn-block btn-danger">Close</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
 
 
     <!-- jQuery first, then Popper.js, then Bootstrap JS -->

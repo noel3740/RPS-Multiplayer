@@ -21,7 +21,8 @@ $(document).ready(function () {
         opponentKey: "",
         wins: 0,
         losses: 0,
-        ties: 0
+        ties: 0,
+        chatMessages: []
     }
 
     var opponentData = {
@@ -29,33 +30,52 @@ $(document).ready(function () {
         userGuess: "",
         wins: 0,
         losses: 0,
-        ties: 0
+        ties: 0,
+        chatMessages: []
     }
 
     var playersDatabaseRef = database.ref("/players");
-    var currentUserDataBaseRef;
-    var currentOpponentDatabaseRef;
+    var currentUserDataBaseRef = null;
+    var currentOpponentDatabaseRef = null;
 
     playersDatabaseRef.on("child_removed", function (snap) {
 
         if (snap.key == userData.opponentKey) {
 
             userData.opponentKey = "";
-            updateCurrentUserData(userData);
+            updateCurrentUserData();
 
-            setOppenentDataToDefault();
-            updateOpponentUserData(opponentData);
+            setUserDataToDefault(opponentData);
+            updateOpponentUserData();
 
             $("#opponentName").text(`${snap.val().userName} disconnected`);
+
+            //Hide the chat button
+            $("#btnChat").hide();
+
+            //Hide the hand select buttons until an opponent is found
+            $("#sectionPickHand").hide();
+
+            //Show the search for opponent button so the user can start a new game with a new opponent
+            $("#divSearchForOppenent").show();
         }
     });
 
-    function setOppenentDataToDefault() {
-        opponentData.userName = "";
-        opponentData.userGuess = "";
-        opponentData.wins = 0;
-        opponentData.losses = 0;
-        opponentData.ties = 0;
+    function setUserDataToDefault(data, keepUserNameFL) {
+
+        if (!keepUserNameFL) {
+            data.userName = "";
+        }
+
+        data.userGuess = "";
+        data.wins = 0;
+        data.losses = 0;
+        data.ties = 0;
+        data.chatMessages = [];
+
+        if (data.opponentKey) {
+            data.opponentKey = 0;
+        }
     }
 
 
@@ -77,15 +97,17 @@ $(document).ready(function () {
 
                 currentOpponentDatabaseRef = childSnap.ref;
                 currentOpponentDatabaseRef.on("child_changed", opponentValueChanged);
+                currentOpponentDatabaseRef.on("child_added", opponentValueChanged);
 
                 opponentData.userName = childSnap.val().userName;
-                updateOpponentUserData(opponentData);
+                updateOpponentUserData();
 
                 userData.opponentKey = childSnap.key;
-                updateCurrentUserData(userData);
+                updateCurrentUserData();
 
                 $("#sectionPickHand").show();
                 $("#lockOpponentCard").hide();
+                $("#btnChat").show();
 
                 searchForOpponentFL = false;
             }
@@ -95,10 +117,30 @@ $(document).ready(function () {
 
     function opponentValueChanged(snap) {
 
-        if (snap.key === "userGuess") {
+        console.log("Parent Key: ", snap.ref.parent.key);
+        console.log("Opponent Key: ", userData.opponentKey);
 
-            opponentData.userGuess = snap.val();
-            checkWinner();
+        switch (snap.key) {
+            case "userGuess":
+                opponentData.userGuess = snap.val();
+                checkWinner();
+                break;
+            case "chatMessages":
+                console.log("Opponenet Chat Messages", snap.val());
+                opponentData.chatMessages = snap.val();
+
+                if (snap.val().length > 0) {
+                    createChatMessageDiv(opponentData.userName, snap.val()[snap.val().length - 1].message, true);
+                }
+                break;
+/*             case "losses":
+            case "wins":
+            case "ties":
+                if (snap.key === "losses") { opponentData.losses = snap.val(); }
+                else if (snap.key === "wins") { opponentData.wins = snap.val(); }
+                else if (snap.key === "ties") { opponentData.ties = snap.val(); }
+                updateOpponentUserData();
+                break; */
         }
     }
 
@@ -132,6 +174,7 @@ $(document).ready(function () {
 
         if (playerGuess && opponentGuess) {
 
+            var modalTitle = "";
             playerGuess = playerGuess.toLowerCase();
             opponentGuess = opponentGuess.toLowerCase();
 
@@ -141,46 +184,73 @@ $(document).ready(function () {
                     (playerGuess === "paper" && opponentGuess === "rock")) {
                     userData.wins++;
                     opponentData.losses++;
+                    modalTitle = "You Won!";
                 } else if (playerGuess === opponentGuess) {
                     userData.ties++;
                     opponentData.ties++;
+                    modalTitle = "You Tied!";
                 } else {
                     userData.losses++;
                     opponentData.wins++;
+                    modalTitle = "You Lost!";
                 }
             }
 
-            updateOpponentUserData(opponentData);
-            updateCurrentUserData(userData);
+            updateOpponentUserData();
+            updateCurrentUserData();
+
+            //Show the results popup for 
+            showModal(modalTitle);
         }
     }
 
-    function updateCurrentUserData(data) {
+    function showModal(title) {
 
-        $("#yourName").text(data.userName);
-        $("#yourWins").text(data.wins);
-        $("#yourLosses").text(data.losses);
-        $("#yourTies").text(data.ties);
-        $("#yourHandDesc").text(data.userGuess);
-        setHandIcon($("#yourHand"), data.userGuess);
-        currentUserDataBaseRef.set(data);
+        $("#resultsModalTitle").text(title);
+        $("#resultsModal").modal('show');
+        //Close the window after 5 seconds
+        setTimeout(() => $("#resultsModal").modal('hide'), 5000);
     }
 
-    function updateOpponentUserData(data) {
+    //Function will run when the results modal is closed
+    function onResultsModalClosed() {
 
-        $("#opponentName").text(data.userName);
-        $("#opponentWins").text(data.wins);
-        $("#opponentLosses").text(data.losses);
-        $("#opponentTies").text(data.ties);
-        $("#opponentHandDesc").text(data.userGuess);
-        setHandIcon($("#opponentHand"), data.userGuess);
+        //Clear out the user guesses
+        opponentData.userGuess = "";
+        updateOpponentUserData();
+        userData.userGuess = "";
+        updateCurrentUserData();
+
+        //Show the buttons for the user to pick a hand
+        $("#sectionPickHand").show();
+    }
+
+    function updateCurrentUserData() {
+
+        $("#yourName").text(userData.userName);
+        $("#yourWins").text(userData.wins);
+        $("#yourLosses").text(userData.losses);
+        $("#yourTies").text(userData.ties);
+        $("#yourHandDesc").text(userData.userGuess);
+        setHandIcon($("#yourHand"), userData.userGuess);
+        currentUserDataBaseRef.set(userData);
+    }
+
+    function updateOpponentUserData() {
+
+        $("#opponentName").text(opponentData.userName);
+        $("#opponentWins").text(opponentData.wins);
+        $("#opponentLosses").text(opponentData.losses);
+        $("#opponentTies").text(opponentData.ties);
+        $("#opponentHandDesc").text(opponentData.userGuess);
+        setHandIcon($("#opponentHand"), opponentData.userGuess);
     }
 
     //Function will be run when the user picks a hand to play
     function handPicked() {
 
         userData.userGuess = $(this).attr("data-hand-desc");
-        updateCurrentUserData(userData);
+        updateCurrentUserData();
 
         $("#sectionPickHand").hide();
         checkWinner();
@@ -197,7 +267,6 @@ $(document).ready(function () {
         $("#yourName").text(userNameValue);
 
         userData.userName = userNameValue;
-
         //Save the user info to the database
         currentUserDataBaseRef = playersDatabaseRef.push(userData);
         currentUserDataBaseRef.onDisconnect().remove();
@@ -209,11 +278,98 @@ $(document).ready(function () {
         $("#lockOpponentCard").show();
     }
 
+    //Function will run when the search for new opponenet button is pressed
+    function searchForNewOpponent() {
+
+        //Hide the search for new oppoenent div
+        $("#divSearchForOppenent").hide();
+
+        //Reset user data to default settings but keep the userName
+        setUserDataToDefault(userData, true);
+        //Update the user data on screen and database
+        updateCurrentUserData();
+
+        //Set search for opponent flag to true
+        searchForOpponentFL = true;
+
+        //Show spinning wheel on the opponent card
+        $("#lockOpponentCard").show();
+
+        //Clear out the chat messsages
+        $("#chatMessages").empty();
+
+        //Check the database once to see if there are any current opponents waiting
+        playersDatabaseRef.once("value", searchForOpponent);
+    }
+
     //Function to enable or disable the start button
     function enableDisableStartButton() {
         var disableButton = $("#inputUserName").val().trim() ? false : true;
         $("#btnStartGame").prop("disabled", disableButton);
     }
+
+    function openChatWindow() {
+
+        //$("#textboxMessage").focus();
+        //setTimeout(function() { $('#textboxMessage').focus() }, 1000);
+        $("#divChat").show("fast", ()=> $('#textboxMessage').focus());
+        $('#textboxMessage').focus();
+        stopChatButtonGlow();
+    }
+
+    function closeChatWindow() {
+        $("#divChat").hide("fast");
+        stopChatButtonGlow();
+    }
+
+    function sendChatMessage(event) {
+        event.preventDefault();
+
+        if ($("#textboxMessage").val().trim()) {
+
+            var chatMessage = {
+                dateTime: Date.now(),
+                message: $("#textboxMessage").val()
+            }
+            userData.chatMessages.push(chatMessage);
+            $("#textboxMessage").val("");
+            updateCurrentUserData();
+            createChatMessageDiv(userData.userName, chatMessage.message, false);
+        }
+    }
+
+    function createChatMessageDiv(userName, chatMessage, isOpponentMessageFL) {
+
+        var chatMessageDivElement = $("#chatMessages");
+        var chatMessageClasses = isOpponentMessageFL ? "ml-5 mr-1 bg-light text-dark" : "ml-1 mr-5 bg-info text-light";
+
+        var chatMessageContainerDiv = $("<div>")
+            .addClass("border my-1 p-3 chatMessage")
+            .addClass(chatMessageClasses);
+
+        var chatMessageDiv = $(`<div><span class="font-weight-bold">${userName}: </span>${chatMessage}</div></div>`);
+
+        chatMessageContainerDiv.append(chatMessageDiv);
+        chatMessageDivElement.append(chatMessageContainerDiv);
+
+        //Scroll to the bottom of the div so the last message is always visible
+        chatMessageDivElement.animate({ "scrollTop": chatMessageDivElement[0].scrollHeight }, 0);
+
+        if (isOpponentMessageFL) {
+            startChatButtonGlow();
+        }
+    }
+
+    function startChatButtonGlow() {
+        $("#btnChat").css("animation", "glowingSecondaryButton 1000ms linear 0s infinite alternate");
+    }
+
+    function stopChatButtonGlow() {
+        $("#btnChat").css("animation", "");
+    }
+
+    //Set default focus to the user name text box
+    $("#inputUserName").focus();
 
     //Enable or disable the start button on load
     enableDisableStartButton();
@@ -224,9 +380,22 @@ $(document).ready(function () {
     //Hide the spinning wheel on the opponent card
     $("#lockOpponentCard").hide();
 
-    //Attach on click events to the new game buttons and hand button
+    //Hide the search for new opponent button by default
+    $("#divSearchForOppenent").hide();
+
+    //Hide the chat popup by default
+    $("#divChat").hide();
+
+    //Hide chat button until there is an opponent
+    $("#btnChat").hide();
+
+    //Attach on click events
     $(".handButton").on("click", handPicked);
     $("#btnStartGame").on("click", startGame);
+    $("#btnSearchForOpponent").on("click", searchForNewOpponent);
+    $("#btnChat").on("click", openChatWindow);
+    $("#btnCloseChat").on("click", closeChatWindow);
+    $("#formChat").on("submit", sendChatMessage);
 
     //Enable or disable the start button depending on if the user entered a username
     $("#inputUserName").on("keyup", enableDisableStartButton);
@@ -235,4 +404,7 @@ $(document).ready(function () {
     $(".handButton").hover(
         (event) => $(event.currentTarget).find("i").removeClass("far").addClass("fas"),
         (event) => $(event.currentTarget).find("i").removeClass("fas").addClass("far"));
+
+    //Function will start a new hand when the results modal closes
+    $("#resultsModal").on('hidden.bs.modal', onResultsModalClosed);
 });

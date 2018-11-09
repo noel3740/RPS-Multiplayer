@@ -1,5 +1,13 @@
 @import url('https://fonts.googleapis.com/css?family=Montserrat');
 
+@keyframes glowingSecondaryButton {
+    0% { background-color: #5a6268; border-color: #5a6268; }
+    50% { background-color: #7a858d; border-color: #7a858d; } 
+    100% { background-color: #b6c4cf; border-color: #b6c4cf; }
+}
+
+
+
 #yourHand, #opponentHand {
     font-size: 10rem;
 }
@@ -9,10 +17,10 @@ body {
 }
 
 .lockScreen {
-    position: absolute; 
-    left: 15px; 
+    position: fixed; 
+    left: 0; 
     top: 0; 
-    right: 15px;
+    right: 0;
     bottom: 0;
     z-index: 1001;
     background-color: rgba(148, 146, 146, 0.9);
@@ -22,3 +30,35 @@ body {
  .resultsCard {
      min-height: 360px;
  }
+
+ /* The popup chat - hidden by default */
+.chatPopup {
+    position: fixed;
+    bottom: 5px;
+    right: 5px;
+    z-index: 9;
+    width: 400px;
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+  }
+
+  /* Button used to open the chat form - fixed at the bottom of the page */
+.openButton {
+    position: fixed;
+    bottom: 23px;
+    right: 28px;
+  }
+
+  #chatMessages {
+      height: 200px;
+      overflow-y: auto;
+  }
+
+  .chatMessage {
+    border-radius: 25px;
+  }
+
+  @media only screen and (max-width: 400px) {
+    .chatPopup {
+        width: 100%;
+    }
+}
