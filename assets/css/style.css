@@ -1,0 +1,24 @@
+@import url('https://fonts.googleapis.com/css?family=Montserrat');
+
+#yourHand, #opponentHand {
+    font-size: 10rem;
+}
+
+body {
+    font-family: 'Montserrat', sans-serif !important;
+}
+
+.lockScreen {
+    position: absolute; 
+    left: 15px; 
+    top: 0; 
+    right: 15px;
+    bottom: 0;
+    z-index: 1001;
+    background-color: rgba(148, 146, 146, 0.9);
+    font-size:2rem;
+ }
+
+ .resultsCard {
+     min-height: 360px;
+ }

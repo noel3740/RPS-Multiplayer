@@ -22,6 +22,77 @@
 
 <body>
 
+    <!--Header Section-->
+    <header>
+        <!-- Jumbotron Title -->
+        <div class="jumbotron">
+            <h1 class="text-center pageTitle">Rock Paper Scissors</h1>
+            <div id="playButtonGroup" class="text-center mt-4">
+
+                <form id="formUserName" class="form-inline justify-content-center mt-3">
+                    <div class="form-group mx-sm-3 mb-2">
+                        <label for="staticEmail2" class="sr-only">User Name</label>
+                        <input type="text" class="form-control" id="inputUserName" placeholder="Enter your username">
+                    </div>
+                    <button id="btnStartGame" type="submit" class="btn btn-primary mb-2" disabled>Start</button>
+                </form>
+
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+
+
+
+        <section class="row">
+            <div class="col-md-12 col-lg-6 mb-4">
+                <div class="card card-default text-center resultsCard">
+                    <div class="card-header bg-success">
+                        <h3 id="yourName">Enter your user name</h3>
+                        <p>Wins: <span id="yourWins">0</span> Losses: <span id="yourLosses">0</span> Ties: <span id="yourTies">0</span></p>
+                    </div>
+                    <div class="card-body">
+                        <p><i id="yourHand"></i></p>
+                        <h4 id="yourHandDesc"></h4>
+                    </div>
+                    <div id="sectionPickHand" class="card-footer">
+                        <h3>Choose your hand</h3>
+                        <button id="btnRock" data-hand-desc="Rock" class="btn btn-primary btn-lg mb-3 handButton"><i
+                                class="far fa-hand-rock"></i>
+                            Rock</button>
+                        <button id="btnPaper" data-hand-desc="Paper" class="btn btn-primary btn-lg mb-3 handButton"><i
+                                class="far fa-hand-paper"></i>
+                            Paper</button>
+                        <button id="btnScissors" data-hand-desc="Scissors" class="btn btn-primary btn-lg mb-3 handButton"><i
+                                class="far fa-hand-scissors"></i>
+                            Scissors</button>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-12 col-lg-6 mb-4">
+
+                <div id="lockOpponentCard" class="p-3 lockScreen">
+                    <div class="d-flex align-items-center justify-content-center h-100">
+                        <p><i class="fa fa-spinner fa-spin"></i> Searching for opponent</p>
+                    </div>
+                </div>
+
+                <div class="card card-default text-center resultsCard">
+                    <div class="card-header bg-dark text-light">
+                        <h3 id="opponentName">Opponent</span></h3>
+                        <p>Wins: <span id="opponentWins">0</span> Losses: <span id="opponentLosses">0</span> Ties:
+                            <span id="opponentTies">0</span></p>
+                    </div>
+                    <div class="card-body">
+                        <p><i id="opponentHand"></i></p>
+                        <h4 id="opponentHandDesc"></h4>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </div>
 
 
     <!-- jQuery first, then Popper.js, then Bootstrap JS -->
