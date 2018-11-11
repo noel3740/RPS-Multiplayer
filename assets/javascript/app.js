@@ -144,7 +144,7 @@ $(document).ready(function () {
         //If the chat message object received is not null then 
         //push the new message to the chat message array on the
         //opponentData global variable
-        if (snap.val()) {
+        if (snap.val() && opponentData.userName) {
 
             opponentData.chatMessages.push(snap.val());
             createChatMessageDiv(opponentData.userName, snap.val().message, true);
