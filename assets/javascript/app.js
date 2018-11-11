@@ -13,6 +13,7 @@ $(document).ready(function () {
 
     //Declare global variables
     var database = firebase.database();
+    var giphyAPIKey = "BhEB2InhZbmP96xsZoWBz15voVYxA47a";
 
     var userData = {
         userName: "",
@@ -43,14 +44,6 @@ $(document).ready(function () {
 
         //If the player that disconnected is your opponent
         if (snap.key == userData.opponentKey) {
-
-            //Clear opponent key from user data object and update it in the database
-            userData.opponentKey = "";
-            updateCurrentUserData();
-
-            //Reset opponent data object to defaults and update screen
-            setUserDataToDefault(opponentData);
-            updateOpponentUserData();
 
             //Notify user that the player disconnected on the main screen and in the chat window
             $("#opponentName").text(`${snap.val().userName} disconnected`);
@@ -237,7 +230,11 @@ $(document).ready(function () {
         //Show the results modal popup
         $("#resultsModal").modal('show');
         //Close the window after 5 seconds
-        setTimeout(() => $("#resultsModal").modal('hide'), 5000);
+        setTimeout(() => {
+            $("#resultsModal").modal('hide');
+            //Get a new gif in the results popup
+            setResultsGif();
+        }, 5000);
     }
 
     //Function will run when the results modal is closed
@@ -325,6 +322,14 @@ $(document).ready(function () {
 
     //Function will run when the search for new opponent button is pressed
     function searchOpponentClick() {
+
+        //Clear opponent key from user data object and update it in the database
+        userData.opponentKey = "";
+        updateCurrentUserData();
+
+        //Reset opponent data object to defaults and update screen
+        setUserDataToDefault(opponentData);
+        updateOpponentUserData();
 
         //Hide the search for new oppoenent div
         $("#divSearchForOppenent").hide();
@@ -458,6 +463,27 @@ $(document).ready(function () {
         $("#btnChat").css("animation", "");
     }
 
+    //Function to add a gif to the results div
+    function setResultsGif() {
+        //Build the giphy query url
+        var queryURL = `https://api.giphy.com/v1/gifs/random?api_key=${giphyAPIKey}&rating=g&tag=dog`;
+
+        //send a get request to the giphy url then build the gif card elements on the page. 
+        //after gif is retrieved then display the results popup
+        $.ajax({
+            url: queryURL,
+            method: "GET"
+        }).then((giphyResponse) => {
+
+            $("#resultsModalBody").empty();
+            var gifImg = $("<img>")
+                .attr("width", "100%")
+                .attr("src", giphyResponse.data.image_url);
+
+            $("#resultsModalBody").append(gifImg);
+        });
+    }
+
     //Set default focus to the user name text box
     $("#inputUserName").focus();
 
@@ -478,6 +504,9 @@ $(document).ready(function () {
 
     //Hide chat button until there is an opponent
     $("#btnChat").hide();
+
+    //Set the gif in the results popup
+    setResultsGif();
 
     //Attach on click events
     $(".handButton").on("click", handPicked);

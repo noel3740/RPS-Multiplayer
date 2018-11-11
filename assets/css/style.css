@@ -1,21 +1,24 @@
+/*Importing Montserrat font from google fonts*/
 @import url('https://fonts.googleapis.com/css?family=Montserrat');
 
+/*Keyframe for glowing animation*/
 @keyframes glowingSecondaryButton {
     0% { background-color: #5a6268; border-color: #5a6268; }
     50% { background-color: #7a858d; border-color: #7a858d; } 
     100% { background-color: #b6c4cf; border-color: #b6c4cf; }
 }
 
-
-
+/*Set font size for user hand and opponent hand icons*/
 #yourHand, #opponentHand {
     font-size: 10rem;
 }
 
+/*Set the font family for the body*/
 body {
     font-family: 'Montserrat', sans-serif !important;
 }
 
+/*Lock screen div class style*/
 .lockScreen {
     position: fixed; 
     left: 0; 
@@ -27,6 +30,7 @@ body {
     font-size:2rem;
  }
 
+ /*Style for the results card*/
  .resultsCard {
      min-height: 360px;
  }
@@ -49,19 +53,23 @@ body {
     right: 28px;
   }
 
+  /*Style for chat messages div*/
   #chatMessages {
       height: 200px;
       overflow-y: auto;
   }
 
+  /*Chat message input text box styling*/
   #textboxMessage {
       padding-right: 40px;
   }
 
+  /*Chat message style to set a more rounded div*/
   .chatMessage {
     border-radius: 25px;
   }
 
+  /*Span containing the enter button/icon in the chat message input text box*/
   #spanEnterMessage {
       background-color: rgba(0, 0, 0, 0);
       border: none;
@@ -72,29 +80,37 @@ body {
       cursor: pointer;
   }
 
+  /*Set the font size for the icon in the chat message input text box*/
   #spanEnterMessage i {
       font-size: 1.5rem;
   }
 
+  /*Creating a custom scroll bar look in the chat window*/
   .customScrollBar::-webkit-scrollbar {
     width: 10px;
   }
    
+  /*Creating a custom scroll bar look in the chat window*/
   .customScrollBar::-webkit-scrollbar-thumb {
     background: #666;
     border-radius: 20px;
   }
   
+  /*Creating a custom scroll bar look in the chat window*/
   .customScrollBar::-webkit-scrollbar-track {
     background: #ddd;
     border-radius: 20px;
   }
 
+  /*Class to prevent scrolling*/
   .noScroll {
       overflow: hidden;
   }
 
+  /*When screen is less than 400px in width*/
   @media only screen and (max-width: 400px) {
+
+    /*Set the chat window popup width to 100%*/
     .chatPopup {
         width: 100%;
     }
