@@ -13,7 +13,6 @@ $(document).ready(function () {
 
     //Declare global variables
     var database = firebase.database();
-    var searchForOpponentFL = false;
 
     var userData = {
         userName: "",
@@ -34,21 +33,28 @@ $(document).ready(function () {
         chatMessages: []
     }
 
-    var playersDatabaseRef = database.ref("/players");
     var currentUserDataBaseRef = null;
     var currentOpponentDatabaseRef = null;
 
+    var playersDatabaseRef = database.ref("/players");
+
+    //Check when a player disconnects
     playersDatabaseRef.on("child_removed", function (snap) {
 
+        //If the player that disconnected is your opponent
         if (snap.key == userData.opponentKey) {
 
+            //Clear opponent key from user data object and update it in the database
             userData.opponentKey = "";
             updateCurrentUserData();
 
+            //Reset opponent data object to defaults and update screen
             setUserDataToDefault(opponentData);
             updateOpponentUserData();
 
+            //Notify user that the player disconnected on the main screen and in the chat window
             $("#opponentName").text(`${snap.val().userName} disconnected`);
+            addDisconnectMessageToChat();
 
             //Hide the chat button
             $("#btnChat").hide();
@@ -61,6 +67,7 @@ $(document).ready(function () {
         }
     });
 
+    //Set the user data object to it's default values
     function setUserDataToDefault(data, keepUserNameFL) {
 
         if (!keepUserNameFL) {
@@ -74,80 +81,91 @@ $(document).ready(function () {
         data.chatMessages = [];
 
         if (data.opponentKey) {
-            data.opponentKey = 0;
+            data.opponentKey = "";
         }
     }
 
-
-    playersDatabaseRef.on("value", function (snap) {
-
-        if (currentUserDataBaseRef &&
-            !userData.opponentKey) {
-
-            searchForOpponent(snap);
-        }
-    });
-
+    //Function to search for an opponent
     function searchForOpponent(snap) {
 
-        snap.forEach((childSnap) => {
-            if (searchForOpponentFL &&
-                childSnap.key !== currentUserDataBaseRef.key &&
-                (!childSnap.val().opponentKey || childSnap.val().opponentKey == currentUserDataBaseRef.key)) {
+        //If the current opponent db reference is not null 
+        // remove it from the db and set it null
+        if (currentOpponentDatabaseRef) {
 
-                currentOpponentDatabaseRef = childSnap.ref;
-                currentOpponentDatabaseRef.on("child_changed", opponentValueChanged);
-                currentOpponentDatabaseRef.on("child_added", opponentValueChanged);
+            currentOpponentDatabaseRef.remove();
+            currentOpponentDatabaseRef = null;
+        }
 
-                opponentData.userName = childSnap.val().userName;
-                updateOpponentUserData();
+        //Oppenent does not have the same key as the current user and 
+        //doesn't currently have an opponent and the current user does 
+        //not have an opponent
+        if (currentUserDataBaseRef.key != snap.key &&
+            !userData.opponentKey &&
+            !snap.val().opponentKey) {
 
-                userData.opponentKey = childSnap.key;
-                updateCurrentUserData();
+            //Stop searching for players added
+            playersDatabaseRef.off("child_added", searchForOpponent);
 
-                $("#sectionPickHand").show();
-                $("#lockOpponentCard").hide();
-                $("#btnChat").show();
+            //Set the current opponent database ref to the ref we found
+            currentOpponentDatabaseRef = snap.ref;
+            //Remove the opponent from the database if they disconnect
+            currentOpponentDatabaseRef.onDisconnect().remove();
 
-                searchForOpponentFL = false;
-            }
+            //Check when chat messages have been received
+            currentOpponentDatabaseRef.child("chatMessages").on("child_added", chatMessageReceived);
+            //Check when the opponent guess has changed
+            currentOpponentDatabaseRef.child("userGuess").on("value", opponentGuessReceived);
 
-        });
-    }
+            //Set the the user name for the opponent
+            opponentData.userName = snap.val().userName;
+            updateOpponentUserData();
 
-    function opponentValueChanged(snap) {
+            //Set the opponent key for the current user
+            userData.opponentKey = snap.key;
+            updateCurrentUserData();
 
-        console.log("Parent Key: ", snap.ref.parent.key);
-        console.log("Opponent Key: ", userData.opponentKey);
-
-        switch (snap.key) {
-            case "userGuess":
-                opponentData.userGuess = snap.val();
-                checkWinner();
-                break;
-            case "chatMessages":
-                console.log("Opponenet Chat Messages", snap.val());
-                opponentData.chatMessages = snap.val();
-
-                if (snap.val().length > 0) {
-                    createChatMessageDiv(opponentData.userName, snap.val()[snap.val().length - 1].message, true);
-                }
-                break;
-/*             case "losses":
-            case "wins":
-            case "ties":
-                if (snap.key === "losses") { opponentData.losses = snap.val(); }
-                else if (snap.key === "wins") { opponentData.wins = snap.val(); }
-                else if (snap.key === "ties") { opponentData.ties = snap.val(); }
-                updateOpponentUserData();
-                break; */
+            //Show the buttons to select a hand, 
+            //Hide the "searching for opponents" lock div
+            //Show the chat button
+            $("#sectionPickHand").show();
+            $("#lockOpponentCard").hide();
+            $("#btnChat").show();
         }
     }
 
+    //Function that is run when the opponents guess has changed
+    function opponentGuessReceived(snap) {
+
+        //If the user guess value is not null or blank then set the userGuess in the
+        //opponentData global variable to the value and check who the winner is
+        if (snap.val()) {
+
+            opponentData.userGuess = snap.val();
+            checkWinner();
+        }
+    }
+
+    //Function that is run when a new chat message is received
+    function chatMessageReceived(snap) {
+
+        //If the chat message object received is not null then 
+        //push the new message to the chat message array on the
+        //opponentData global variable
+        if (snap.val()) {
+
+            opponentData.chatMessages.push(snap.val());
+            createChatMessageDiv(opponentData.userName, snap.val().message, true);
+        }
+    }
+
+    //Function to set the hand icon displayed on the screen on user guess
     function setHandIcon(handIconElement, handDesc) {
 
+        //Remove any classes from the hand icon element passed in as a parameter
         handIconElement.removeClass();
 
+        //If the hand description passed in as a parameter is not blank or null
+        //then add the font awesome classes for the hand description
         if (handDesc) {
 
             handIconElement.addClass("fas");
@@ -167,17 +185,22 @@ $(document).ready(function () {
 
     }
 
+    //Function to check who the winner is
     function checkWinner() {
 
         var playerGuess = userData.userGuess;
         var opponentGuess = opponentData.userGuess;
 
+        //If the current player and opponent both have guesses then
         if (playerGuess && opponentGuess) {
 
             var modalTitle = "";
             playerGuess = playerGuess.toLowerCase();
             opponentGuess = opponentGuess.toLowerCase();
 
+            //Compare the current player guess to the opponent guess to get winner/losser/tie and 
+            //increment the wins/losses/ties in the current player and opponent objects and set 
+            //the title that would be displayed in the results modal popup
             if ((playerGuess === "rock") || (playerGuess === "paper") || (playerGuess === "scissors")) {
                 if ((playerGuess === "rock" && opponentGuess === "scissors") ||
                     (playerGuess === "scissors" && opponentGuess === "paper") ||
@@ -196,6 +219,8 @@ $(document).ready(function () {
                 }
             }
 
+            //Update opponent data on screen and current 
+            //player data on screen and in the database
             updateOpponentUserData();
             updateCurrentUserData();
 
@@ -204,9 +229,12 @@ $(document).ready(function () {
         }
     }
 
+    //Function to show the results modal popup
     function showModal(title) {
 
+        //Set the title in the results modal popup
         $("#resultsModalTitle").text(title);
+        //Show the results modal popup
         $("#resultsModal").modal('show');
         //Close the window after 5 seconds
         setTimeout(() => $("#resultsModal").modal('hide'), 5000);
@@ -225,6 +253,7 @@ $(document).ready(function () {
         $("#sectionPickHand").show();
     }
 
+    //Function to update the current user data on screen and in the database
     function updateCurrentUserData() {
 
         $("#yourName").text(userData.userName);
@@ -236,6 +265,7 @@ $(document).ready(function () {
         currentUserDataBaseRef.set(userData);
     }
 
+    //Function to update the opponent user data on screen
     function updateOpponentUserData() {
 
         $("#opponentName").text(opponentData.userName);
@@ -249,10 +279,15 @@ $(document).ready(function () {
     //Function will be run when the user picks a hand to play
     function handPicked() {
 
+        //Set the value in the userData global object to the data-hand-desc 
+        //attribute value in the hand button that was selected. Update the current
+        //user data on the screen and in the database
         userData.userGuess = $(this).attr("data-hand-desc");
         updateCurrentUserData();
 
+        //Hide the buttons for selecting a hand
         $("#sectionPickHand").hide();
+        //Check the winner
         checkWinner();
     }
 
@@ -261,25 +296,35 @@ $(document).ready(function () {
 
         event.preventDefault();
 
+        //Hide the username form section
         $("#formUserName").hide();
 
+        //If there is already a current user database ref then remove it from the database
+        if (currentUserDataBaseRef) {
+            currentUserDataBaseRef.remove();
+            currentUserDataBaseRef = null;
+        }
+
+        //Grab the value the user entered in the username text box and display it on the screen
         var userNameValue = $("#inputUserName").val().trim();
         $("#yourName").text(userNameValue);
 
+        //Sett the username on the user data object and push it out to the database to create the user there
         userData.userName = userNameValue;
-        //Save the user info to the database
         currentUserDataBaseRef = playersDatabaseRef.push(userData);
-        currentUserDataBaseRef.onDisconnect().remove();
 
-        //Set search for opponent flag to true
-        searchForOpponentFL = true;
+        //If the user disocnnects then remove that user from the database
+        currentUserDataBaseRef.onDisconnect().remove();
 
         //Show spinning wheel on the opponent card
         $("#lockOpponentCard").show();
+
+        //Search for opponents
+        playersDatabaseRef.on("child_added", searchForOpponent);
     }
 
-    //Function will run when the search for new opponenet button is pressed
-    function searchForNewOpponent() {
+    //Function will run when the search for new opponent button is pressed
+    function searchOpponentClick() {
 
         //Hide the search for new oppoenent div
         $("#divSearchForOppenent").hide();
@@ -289,17 +334,14 @@ $(document).ready(function () {
         //Update the user data on screen and database
         updateCurrentUserData();
 
-        //Set search for opponent flag to true
-        searchForOpponentFL = true;
-
         //Show spinning wheel on the opponent card
         $("#lockOpponentCard").show();
 
         //Clear out the chat messsages
         $("#chatMessages").empty();
 
-        //Check the database once to see if there are any current opponents waiting
-        playersDatabaseRef.once("value", searchForOpponent);
+        //Search for opponents
+        playersDatabaseRef.on("child_added", searchForOpponent);
     }
 
     //Function to enable or disable the start button
@@ -308,62 +350,110 @@ $(document).ready(function () {
         $("#btnStartGame").prop("disabled", disableButton);
     }
 
+    //Function to open the chat window
     function openChatWindow() {
 
-        //$("#textboxMessage").focus();
-        //setTimeout(function() { $('#textboxMessage').focus() }, 1000);
-        $("#divChat").show("fast", ()=> $('#textboxMessage').focus());
-        $('#textboxMessage').focus();
+        //Animate the showing of the chat window and when done set the focus to the
+        //send chat text box
+        $("#divChat").show("fast", () => $('#textboxMessage').focus());
+        //Prevent the html body from scrolling when the chat window is open
+        $("body").addClass("noScroll");
+        //Stop the chat button from glowing
         stopChatButtonGlow();
+
+        //Scroll to the bottom of the div so the last message is always visible
+        var chatMessageDivElement = $("#chatMessages");
+        chatMessageDivElement.animate({ "scrollTop": chatMessageDivElement[0].scrollHeight }, 0);
     }
 
+    //Function to close the chat window
     function closeChatWindow() {
+
+        //Animate the hiding of the chat window
         $("#divChat").hide("fast");
+        //Allow the html body to scroll again
+        $("body").removeClass("noScroll");
+        //Stop the chat button from glowing
         stopChatButtonGlow();
     }
 
+    //Function to send a chat message to the opponent
     function sendChatMessage(event) {
+
         event.preventDefault();
+        var textboxMessage = $("#textboxMessage");
 
-        if ($("#textboxMessage").val().trim()) {
+        //If the message being sent has a value
+        if (textboxMessage.val().trim()) {
 
+            //Create a chat message object
             var chatMessage = {
-                dateTime: Date.now(),
-                message: $("#textboxMessage").val()
+                dateTime: firebase.database.ServerValue.TIMESTAMP,
+                message: textboxMessage.val()
             }
+
+            //Add the chat message object to the userData object global variable
             userData.chatMessages.push(chatMessage);
-            $("#textboxMessage").val("");
+            //Clear out the message text box
+            textboxMessage.val("");
+            //Update the current user data on screen and in the database
             updateCurrentUserData();
+            //Add the message to the chat window
             createChatMessageDiv(userData.userName, chatMessage.message, false);
         }
     }
 
+    //Function to add the chat message to the chat window
     function createChatMessageDiv(userName, chatMessage, isOpponentMessageFL) {
 
         var chatMessageDivElement = $("#chatMessages");
+        //Get the class to add to the div depending on if it's for the current user or the opponent
         var chatMessageClasses = isOpponentMessageFL ? "ml-5 mr-1 bg-light text-dark" : "ml-1 mr-5 bg-info text-light";
 
+        //Create chat message container div
         var chatMessageContainerDiv = $("<div>")
             .addClass("border my-1 p-3 chatMessage")
             .addClass(chatMessageClasses);
 
+        //Create the div containing the chat message text
         var chatMessageDiv = $(`<div><span class="font-weight-bold">${userName}: </span>${chatMessage}</div></div>`);
 
+        //Append the chat message text div to the chat message container
         chatMessageContainerDiv.append(chatMessageDiv);
+        //Append the chat message container div to the main chat window div
         chatMessageDivElement.append(chatMessageContainerDiv);
 
         //Scroll to the bottom of the div so the last message is always visible
         chatMessageDivElement.animate({ "scrollTop": chatMessageDivElement[0].scrollHeight }, 0);
 
+        //If this is a message from an opponent then make the chat button glow 
+        //so the user knows there is a new message if they don't have the chat 
+        //window open
         if (isOpponentMessageFL) {
             startChatButtonGlow();
         }
     }
 
+    //Function to add a disconnect message to the chat window
+    function addDisconnectMessageToChat() {
+
+        var chatMessageDivElement = $("#chatMessages");
+        //Create element that contains the player disconnected message
+        var newElement = $(`<p class="text-center pt-3">Player diconnected!</p>`);
+
+        //Add the new element to the main chat window div
+        chatMessageDivElement.append(newElement);
+
+        //Scroll to the bottom of the div so the last message is always visible
+        chatMessageDivElement.animate({ "scrollTop": chatMessageDivElement[0].scrollHeight }, 0);
+    }
+
+    //Function to make the chat button glow
     function startChatButtonGlow() {
         $("#btnChat").css("animation", "glowingSecondaryButton 1000ms linear 0s infinite alternate");
     }
 
+    //Function to stop the chat button from glowing
     function stopChatButtonGlow() {
         $("#btnChat").css("animation", "");
     }
@@ -392,10 +482,11 @@ $(document).ready(function () {
     //Attach on click events
     $(".handButton").on("click", handPicked);
     $("#btnStartGame").on("click", startGame);
-    $("#btnSearchForOpponent").on("click", searchForNewOpponent);
+    $("#btnSearchForOpponent").on("click", searchOpponentClick);
     $("#btnChat").on("click", openChatWindow);
     $("#btnCloseChat").on("click", closeChatWindow);
     $("#formChat").on("submit", sendChatMessage);
+    $("#spanEnterMessage").on("click", sendChatMessage);
 
     //Enable or disable the start button depending on if the user entered a username
     $("#inputUserName").on("keyup", enableDisableStartButton);

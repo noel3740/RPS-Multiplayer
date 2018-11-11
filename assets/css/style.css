@@ -36,9 +36,10 @@ body {
     position: fixed;
     bottom: 5px;
     right: 5px;
-    z-index: 9;
+    z-index: 1001;
     width: 400px;
-    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+    box-shadow: 10px 10px 5px #aaaaaa;
+    /* box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19); */
   }
 
   /* Button used to open the chat form - fixed at the bottom of the page */
@@ -53,8 +54,44 @@ body {
       overflow-y: auto;
   }
 
+  #textboxMessage {
+      padding-right: 40px;
+  }
+
   .chatMessage {
     border-radius: 25px;
+  }
+
+  #spanEnterMessage {
+      background-color: rgba(0, 0, 0, 0);
+      border: none;
+      position: absolute;
+      right: 0;
+      top: 0;
+      z-index: 100;
+      cursor: pointer;
+  }
+
+  #spanEnterMessage i {
+      font-size: 1.5rem;
+  }
+
+  .customScrollBar::-webkit-scrollbar {
+    width: 10px;
+  }
+   
+  .customScrollBar::-webkit-scrollbar-thumb {
+    background: #666;
+    border-radius: 20px;
+  }
+  
+  .customScrollBar::-webkit-scrollbar-track {
+    background: #ddd;
+    border-radius: 20px;
+  }
+
+  .noScroll {
+      overflow: hidden;
   }
 
   @media only screen and (max-width: 400px) {
