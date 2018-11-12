@@ -7,7 +7,7 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Rock Paper Scissors</title>
     <!--Theme color for browser tab-->
-    <meta name="theme-color" content="#343a40">
+    <meta name="theme-color" content="#28b4e5">
     <!--Favicon-->
     <!-- <link rel="icon" type="image/png" sizes="310x310" href="assets/images/mstile-310x310.png">
     <link rel="icon" type="image/png" sizes="32x32" href="assets/images/favicon-32x32.png">
@@ -33,7 +33,7 @@
     <header>
         <!-- Jumbotron Title -->
         <div class="jumbotron">
-            <h1 class="text-center pageTitle">Rock Paper Scissors</h1>
+            <h1 class="text-center pageTitle font-weight-bold">Rock Paper Scissors</h1>
             <div id="playButtonGroup" class="text-center mt-4">
 
                 <form id="formUserName" class="form-inline justify-content-center mt-3">
@@ -41,7 +41,7 @@
                         <label for="staticEmail2" class="sr-only">User Name</label>
                         <input type="text" class="form-control" id="inputUserName" placeholder="Enter your username">
                     </div>
-                    <button id="btnStartGame" type="submit" class="btn btn-primary mb-2" disabled>Start</button>
+                    <button id="btnStartGame" type="submit" class="btn btn-danger mb-2" disabled>Start</button>
                 </form>
 
             </div>
@@ -57,7 +57,7 @@
                         <h3 id="yourName">Enter your user name</h3>
                         <p>Wins: <span id="yourWins">0</span> Losses: <span id="yourLosses">0</span> Ties: <span id="yourTies">0</span></p>
                     </div>
-                    <div class="card-body">
+                    <div class="card-body bg-light">
                         <p><i id="yourHand"></i></p>
                         <h4 id="yourHandDesc"></h4>
                     </div>
@@ -83,7 +83,7 @@
                         <p>Wins: <span id="opponentWins">0</span> Losses: <span id="opponentLosses">0</span> Ties:
                             <span id="opponentTies">0</span></p>
                     </div>
-                    <div class="card-body">
+                    <div class="card-body bg-light">
                         <p><i id="opponentHand"></i></p>
                         <h4 id="opponentHandDesc"></h4>
                         <div id="divSearchForOppenent">

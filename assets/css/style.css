@@ -18,6 +18,14 @@ body {
     font-family: 'Montserrat', sans-serif !important;
 }
 
+.jumbotron {
+    /* background-color: rgba(233, 236, 239, .8); */
+    background-image: url('../images/Background.jpg'); /*change the background image*/
+    background-repeat: no-repeat;
+    background-size: contain;
+    background-color: #28b4e5;
+}
+
 /*Lock screen div class style*/
 .lockScreen {
     position: fixed; 
