@@ -3,9 +3,9 @@
 
 /*Keyframe for glowing animation*/
 @keyframes glowingSecondaryButton {
-    0% { background-color: #5a6268; border-color: #5a6268; }
-    50% { background-color: #7a858d; border-color: #7a858d; } 
-    100% { background-color: #b6c4cf; border-color: #b6c4cf; }
+    0% { background-color: #dc3545; border-color: #dc3545; }
+    50% { background-color: #db6571; border-color: #db6571; } 
+    100% { background-color: #d3979d; border-color: #d3979d; }
 }
 
 /*Set font size for user hand and opponent hand icons*/
