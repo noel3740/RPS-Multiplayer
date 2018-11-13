@@ -229,7 +229,13 @@ $(document).ready(function () {
         $("#resultsModalTitle").text(title);
         //Show the results modal popup
         $("#resultsModal").modal('show');
-        //Close the window after 5 seconds
+
+        //Setup for a new game after 3 seconds. 
+        setTimeout(() => {
+            setupNewHand();
+        }, 3000);
+
+        //Close the results popup window after 5 seconds
         setTimeout(() => {
             $("#resultsModal").modal('hide');
             //Get a new gif in the results popup
@@ -237,8 +243,8 @@ $(document).ready(function () {
         }, 5000);
     }
 
-    //Function will run when the results modal is closed
-    function onResultsModalClosed() {
+    //Function to setup a new hand to play
+    function setupNewHand() {
 
         //Clear out the user guesses
         opponentData.userGuess = "";
@@ -524,7 +530,4 @@ $(document).ready(function () {
     $(".handButton").hover(
         (event) => $(event.currentTarget).find("i").removeClass("far").addClass("fas"),
         (event) => $(event.currentTarget).find("i").removeClass("fas").addClass("far"));
-
-    //Function will start a new hand when the results modal closes
-    $("#resultsModal").on('hidden.bs.modal', onResultsModalClosed);
 });
