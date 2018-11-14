@@ -121,8 +121,11 @@ $(document).ready(function () {
             //Hide the "searching for opponents" lock div
             //Show the chat button
             $("#sectionPickHand").show();
-            $("#lockOpponentCard").hide();
+            $("#lockScreen").hide();
             $("#btnChat").show();
+
+            //Remove prevention of the html body from scrolling
+            $("body").removeClass("noScroll");
         }
     }
 
@@ -320,7 +323,10 @@ $(document).ready(function () {
         currentUserDataBaseRef.onDisconnect().remove();
 
         //Show spinning wheel on the opponent card
-        $("#lockOpponentCard").show();
+        $("#lockScreen").show();
+
+        //Prevent the html body from scrolling
+        $("body").addClass("noScroll");
 
         //Search for opponents
         playersDatabaseRef.on("child_added", searchForOpponent);
@@ -346,7 +352,10 @@ $(document).ready(function () {
         updateCurrentUserData();
 
         //Show spinning wheel on the opponent card
-        $("#lockOpponentCard").show();
+        $("#lockScreen").show();
+
+        //Prevent the html body from scrolling
+        $("body").addClass("noScroll");
 
         //Clear out the chat messsages
         $("#chatMessages").empty();
@@ -500,7 +509,10 @@ $(document).ready(function () {
     $("#sectionPickHand").hide();
 
     //Hide the spinning wheel on the opponent card
-    $("#lockOpponentCard").hide();
+    $("#lockScreen").hide();
+
+    //Remove prevention of the html body from scrolling
+    $("body").removeClass("noScroll");
 
     //Hide the search for new opponent button by default
     $("#divSearchForOppenent").hide();
