@@ -255,6 +255,9 @@ $(document).ready(function () {
         userData.userGuess = "";
         updateCurrentUserData();
 
+        //Remove the hover over effect on the hand buttons. 
+        $(".handButton").find("i").removeClass("fas").addClass("far")
+
         //Show the buttons for the user to pick a hand
         $("#sectionPickHand").show();
     }
@@ -376,8 +379,6 @@ $(document).ready(function () {
         //Animate the showing of the chat window and when done set the focus to the
         //send chat text box
         $("#divChat").show("fast", () => $('#textboxMessage').focus());
-        //Prevent the html body from scrolling when the chat window is open
-        $("body").addClass("noScroll");
         //Stop the chat button from glowing
         stopChatButtonGlow();
 
@@ -391,8 +392,6 @@ $(document).ready(function () {
 
         //Animate the hiding of the chat window
         $("#divChat").hide("fast");
-        //Allow the html body to scroll again
-        $("body").removeClass("noScroll");
         //Stop the chat button from glowing
         stopChatButtonGlow();
     }
