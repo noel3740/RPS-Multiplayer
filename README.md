@@ -6,3 +6,5 @@
 * Chat ability with a button on the bottom right hand corner of the screen.
 * Styling done with bootstrap and custom css.
 * Ability to find a new opponent if the one you were playing with drops out. 
+
+Deployed to https://noel3740.github.io/RPS-Multiplayer/
