@@ -8,5 +8,6 @@
 * Ability to find a new opponent if the one you were playing with drops out. 
 
 Deployed to https://noel3740.github.io/RPS-Multiplayer/
+
 ![](screenshot.JPG "Screenshot of Program")
 
